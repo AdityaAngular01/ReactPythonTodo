@@ -5,7 +5,7 @@ import {Button} from "../../components/ui/button.tsx";
 import {ScrollArea} from "../../components/ui/scroll-area.tsx";
 import {Checkbox} from "../../components/ui/checkbox.tsx";
 import {useEffect, useState} from "react";
-import {todoService} from "../../services/todoService.ts";
+import {type TaskResponse, todoService} from "../../services/todoService.ts";
 
 
 
@@ -65,7 +65,7 @@ export function Dashboard() {
                         <div className="space-y-3">
                             {/* Todo Item */}
                             {
-                                tasks.map((task: any) => (
+                                tasks.map((task: TaskResponse) => (
                                     <div className="flex items-center justify-between p-3 rounded-xl border bg-background hover:shadow-sm transition">
                                         <div className="flex items-center gap-3">
                                             <Checkbox checked={task.is_completed}/>

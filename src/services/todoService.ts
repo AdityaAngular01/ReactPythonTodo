@@ -4,7 +4,7 @@ interface TaskPayload {
     title: string
 }
 
-interface TaskResponse {
+export interface TaskResponse {
     _id:string
     title: string
     is_completed: boolean
