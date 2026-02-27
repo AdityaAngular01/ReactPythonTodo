@@ -16,12 +16,17 @@ export function Dashboard() {
         is_completed: false,
     })
 
+    const [pendingTaskCount, setPendingTasksCount] = useState<number>(0)
+
     const [tasks, setTasks] = useState<TaskResponse[]>([])
     const [refresh, setRefresh] = useState(0)
 
     useEffect(()=>{
         // @ts-ignore
-        todoService.getTasks().then(response=> setTasks(response))
+        todoService.getTasks().then(response=> {
+            setTasks(response)
+            setPendingTasksCount(response.filter(t => !t.is_completed).length)
+        })
     },[refresh])
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -109,7 +114,9 @@ export function Dashboard() {
                     {/* Footer Actions */}
                     <div className="flex items-center justify-between pt-2">
             <span className="text-sm text-muted-foreground">
-              2 tasks remaining
+              {
+                  pendingTaskCount > 0 && <span className="text-destructive">{pendingTaskCount} pending task(s) </span>
+              }
             </span>
                         <Button variant="outline" className="rounded-xl" onClick={handleDeleteAll}>
                             Clear Completed
