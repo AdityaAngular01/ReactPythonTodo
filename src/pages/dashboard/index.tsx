@@ -1,4 +1,4 @@
-import { Plus, Trash2, Pencil } from "lucide-react";
+import {Plus, Trash2, Pencil, CircleFadingArrowUp} from "lucide-react";
 import {Card, CardContent, CardHeader, CardTitle} from "../../components/ui/card.tsx";
 import {Input} from "../../components/ui/input.tsx";
 import {Button} from "../../components/ui/button.tsx";
@@ -10,8 +10,13 @@ import {type TaskResponse, todoService} from "../../services/todoService.ts";
 
 
 export function Dashboard() {
-    const [title, setTaskTitle] = useState('')
-    const [tasks, setTasks] = useState([])
+    const [task, setTask] = useState<TaskResponse>({
+        _id: "",
+        title: "",
+        is_completed: false,
+    })
+
+    const [tasks, setTasks] = useState<TaskResponse[]>([])
     const [refresh, setRefresh] = useState(0)
 
     useEffect(()=>{
@@ -21,9 +26,18 @@ export function Dashboard() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        await todoService.createTask({title})
+        if (task._id) {
+            await todoService.updateTask(task._id, task)
+        }else {
+            await todoService.createTask({title: task.title})
+        }
+        setTask(prevState => ({
+            ...prevState,
+            _id: "",
+            title: "",
+            is_completed: false,
+        }))
         setRefresh(prev => prev + 1)
-        setTaskTitle('')
     }
 
     const handleDelete = async (id: string) => {
@@ -33,6 +47,11 @@ export function Dashboard() {
         }
     }
 
+    const handleCompleteToggle = async (t: TaskResponse) => {
+        await todoService.updateTask(t._id, {...t, is_completed: !t.is_completed})
+        setRefresh(prev => prev + 1)
+    }
+
 
     const handleDeleteAll = async () => {
         if(confirm("Are you sure you want to delete all tasks?")){
@@ -40,7 +59,6 @@ export function Dashboard() {
             setRefresh(prev => prev + 1)
         }
     }
-
 
     return (
         <div className="min-h-screen bg-muted/40 flex items-center justify-center p-6">
@@ -53,9 +71,12 @@ export function Dashboard() {
                     {/* Add Todo Section */}
                     <div>
                         <form onSubmit={handleSubmit} method="post" className="flex gap-2">
-                            <Input placeholder="Add a new task..." className="flex-1" onChange={(e) => setTaskTitle(e.target.value)} />
+                            <Input placeholder="Add a new task..." className="flex-1" onChange={(e) => setTask(prev=> ({...prev, title: e.target.value}))} value={task.title} />
                             <Button size="icon" className="rounded-xl" type={"submit"}>
-                                <Plus className="h-4 w-4" />
+                                {
+                                    !task._id && <Plus className="h-4 w-4" />
+                                }
+                                {task._id && <CircleFadingArrowUp className="h-4 w-4"/>}
                             </Button>
                         </form>
                     </div>
@@ -65,17 +86,17 @@ export function Dashboard() {
                         <div className="space-y-3">
                             {/* Todo Item */}
                             {
-                                tasks.map((task: TaskResponse) => (
+                                tasks.map((t: TaskResponse) => (
                                     <div className="flex items-center justify-between p-3 rounded-xl border bg-background hover:shadow-sm transition">
                                         <div className="flex items-center gap-3">
-                                            <Checkbox checked={task.is_completed}/>
-                                            <span className="text-sm font-medium">{task.title}</span>
+                                            <Checkbox checked={t.is_completed} onClick={()=> handleCompleteToggle(t)}/>
+                                            <span className="text-sm font-medium">{t.title}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Button variant="ghost" size="icon" className="rounded-lg">
+                                            <Button variant="ghost" size="icon" className="rounded-lg" onClick={()=> setTask(prev=> ({...prev, _id: t._id, title: t.title, is_completed: t.is_completed}))}>
                                                 <Pencil className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="rounded-lg" onClick={() => handleDelete(task._id)}>
+                                            <Button variant="ghost" size="icon" className="rounded-lg" onClick={() => handleDelete(t._id)}>
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
                                         </div>
