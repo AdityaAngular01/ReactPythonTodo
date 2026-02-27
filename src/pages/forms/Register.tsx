@@ -11,6 +11,8 @@ import { Input } from "../../components/ui/input"
 import { Button } from "../../components/ui/button"
 import {Link} from "react-router-dom";
 import {type ChangeEvent, type FormEvent, useState} from "react";
+import {authService} from "../../services/authService";
+
 
 interface RegisterForm {
     full_name: string;
@@ -33,9 +35,13 @@ export function Register() {
         setRegisterForm(prev => ({...prev, [name]: value}))
     }
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log(registerForm);
+        const response = await authService.register(registerForm);
+        localStorage.setItem("token", response.access_token)
+        if (response.access_token) {
+            window.location.href = "/";
+        }
     }
 
 

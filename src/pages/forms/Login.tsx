@@ -11,6 +11,7 @@ import { Input } from "../../components/ui/input"
 import { Button } from "../../components/ui/button"
 import { Link } from "react-router-dom"
 import {useState} from "react";
+import {authService} from "../../services/authService";
 
 interface LoginForm {
     email: string;
@@ -28,9 +29,13 @@ export function Login() {
         setLoginForm(prev => ({...prev, [name]: value}))
     }
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log(loginForm);
+        const response = await authService.login(loginForm);
+        localStorage.setItem("token", response.access_token)
+        if (response.access_token) {
+            window.location.href = "/";
+        }
     }
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 via-white to-slate-200 p-4">
@@ -65,7 +70,7 @@ export function Login() {
                     </CardHeader>
 
                     <CardContent>
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmit} method="post">
                             <div className="flex flex-col gap-6">
 
                                 <div className="grid gap-2">
